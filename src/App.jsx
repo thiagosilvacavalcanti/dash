@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE || "http://localhost:3000/api/";  // seu proxy
+const API_BASE = import.meta.env.VITE_API_BASE?.replace(/\/$/, "");;
 
 function monthRange(d = new Date()) {
   const y = d.getFullYear();
@@ -31,7 +30,7 @@ async function fetchTotalsForType({ first, last, lojaId, tipo }) {
   let nomeLoja = "";
 
   while (true) {
-    const url = `${API_BASE}/vendas?data_inicio=${first}&data_fim=${last}&pagina=${pagina}&loja_id=${lojaId}&tipo=${tipo}`;
+   const url = `${API_BASE}/vendas?data_inicio=${first}&data_fim=${last}&pagina=${pagina}&loja_id=${lojaId}&tipo=${tipo}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status} em ${url}`);
     const json = await res.json();

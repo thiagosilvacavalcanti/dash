@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE?.replace(/\/$/, "");;
+const API_BASE = import.meta.env.VITE_API_BASE?.replace(/\/$/, "") || "/api";
 
 function monthRange(d = new Date()) {
   const y = d.getFullYear();

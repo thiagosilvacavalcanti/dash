@@ -1,36 +1,29 @@
-// netlify/functions/proxy.js
-exports.handler = async (event) => {
-  // remove o prefixo /api/ da rota para montar o destino
-  const downstreamPath = event.path.replace(/^\/api\//, "");
-  const qs = event.rawQuery ? `?${event.rawQuery}` : "";
-  const url = `https://api.beteltecnologia.com/${downstreamPath}${qs}`;
+import fetch from "node-fetch";
 
+export async function handler(event) {
   try {
-    const res = await fetch(url, {
+    const url = "https://api.beteltecnologia.com" + event.path.replace("/.netlify/functions/proxy", "");
+    
+    const response = await fetch(url, {
       method: event.httpMethod,
       headers: {
         "Content-Type": "application/json",
         "access-token": process.env.BETEL_ACCESS_TOKEN,
         "secret-access-token": process.env.BETEL_SECRET_TOKEN,
       },
-      body:
-        event.httpMethod === "GET" || event.httpMethod === "HEAD"
-          ? undefined
-          : event.body,
+      body: ["GET", "HEAD"].includes(event.httpMethod) ? undefined : event.body,
     });
 
-    const text = await res.text();
+    const text = await response.text();
     return {
-      statusCode: res.status,
-      headers: {
-        "Content-Type": res.headers.get("content-type") || "application/json",
-      },
+      statusCode: response.status,
       body: text,
     };
-  } catch (e) {
+  } catch (error) {
+    console.error("Proxy error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: String(e) }),
+      body: JSON.stringify({ error: "Proxy error", details: error.message }),
     };
   }
-};
+}

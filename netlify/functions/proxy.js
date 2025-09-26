@@ -1,10 +1,19 @@
-import fetch from "node-fetch";
+// netlify/functions/proxy.js
 
 export async function handler(event) {
   try {
-    const url = "https://api.beteltecnologia.com" + event.path.replace("/.netlify/functions/proxy", "");
-    
-    const response = await fetch(url, {
+    // remove prefixos possíveis do path
+    const cleanedPath =
+      (event.path || "")
+        .replace(/^\/\.netlify\/functions\/proxy/, "")
+        .replace(/^\/api/, "") || "/";
+
+    // remonta a query string (Netlify fornece em rawQuery)
+    const qs = event.rawQuery ? `?${event.rawQuery}` : "";
+
+    const url = `https://api.beteltecnologia.com${cleanedPath}${qs}`;
+
+    const res = await fetch(url, {
       method: event.httpMethod,
       headers: {
         "Content-Type": "application/json",
@@ -14,9 +23,14 @@ export async function handler(event) {
       body: ["GET", "HEAD"].includes(event.httpMethod) ? undefined : event.body,
     });
 
-    const text = await response.text();
+    const text = await res.text();
+
     return {
-      statusCode: response.status,
+      statusCode: res.status,
+      headers: {
+        // repassa o content-type do upstream quando possível
+        "Content-Type": res.headers.get("content-type") || "application/json",
+      },
       body: text,
     };
   } catch (error) {

@@ -54,7 +54,7 @@ export default function App() {
   return (
     <div style={{ display: "flex", gap: "2rem" }}>
       <Loja lojaId="338180" titulo="Matriz" />
-      <Loja lojaId="338181" titulo="Filial" />
+      <Loja lojaId="428885" titulo="Filial" />
     </div>
   );
 }

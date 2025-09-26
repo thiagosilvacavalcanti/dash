@@ -1,43 +1,35 @@
-// netlify/functions/proxy.js
+// Netlify Function ESM
+import fetch from "node-fetch";
 
 export async function handler(event) {
   try {
-    // remove prefixos possíveis do path
-    const cleanedPath =
-      (event.path || "")
-        .replace(/^\/\.netlify\/functions\/proxy/, "")
-        .replace(/^\/api/, "") || "/";
+    // Remove o prefixo da function e monta URL real da API
+    const upstreamPath = event.path.replace("/.netlify/functions/proxy", "");
+    const url = "https://api.beteltecnologia.com" + upstreamPath + (event.rawQuery ? `?${event.rawQuery}` : "");
 
-    // remonta a query string (Netlify fornece em rawQuery)
-    const qs = event.rawQuery ? `?${event.rawQuery}` : "";
-
-    const url = `https://api.beteltecnologia.com${cleanedPath}${qs}`;
-
-    const res = await fetch(url, {
+    const response = await fetch(url, {
       method: event.httpMethod,
       headers: {
         "Content-Type": "application/json",
         "access-token": process.env.BETEL_ACCESS_TOKEN,
-        "secret-access-token": process.env.BETEL_SECRET_TOKEN,
+        "secret-access-token": process.env.BETEL_SECRET_TOKEN
       },
-      body: ["GET", "HEAD"].includes(event.httpMethod) ? undefined : event.body,
+      body: ["GET", "HEAD"].includes(event.httpMethod) ? undefined : event.body
     });
 
-    const text = await res.text();
+    const text = await response.text();
 
     return {
-      statusCode: res.status,
-      headers: {
-        // repassa o content-type do upstream quando possível
-        "Content-Type": res.headers.get("content-type") || "application/json",
-      },
-      body: text,
+      statusCode: response.status,
+      headers: { "Content-Type": "application/json" },
+      body: text
     };
-  } catch (error) {
-    console.error("Proxy error:", error);
+  } catch (e) {
+    console.error("Proxy error:", e);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Proxy error", details: error.message }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Proxy error", details: String(e?.message || e) })
     };
   }
 }

@@ -1,13 +1,10 @@
-# netlify.toml
 [build]
-  command = "npm run build"
+  command = "vite build"
   publish = "dist"
   functions = "netlify/functions"
 
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/proxy"
-  status = 200
-
-[functions]
-  directory = "netlify/functions"
+[dev]
+  command = "vite"          # o Vite roda na 5173
+  targetPort = 5173         # porta do Vite
+  port = 8888               # porta do Netlify Dev (proxy + functions)
+  framework = "vite"
